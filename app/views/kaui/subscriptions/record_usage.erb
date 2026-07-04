@@ -27,7 +27,7 @@
                         <% if @unit_types.length == 1 %>
                             <%= text_field_tag :unit_type, @unit_types.first, readonly: true, required: true, class: 'form-control bg-light' %>
                         <% elsif @unit_types.length > 1 %>
-                            <%= select_tag :unit_type, options_for_select(@unit_types.map { |u| [u, u] }, @unit_type.presence || @unit_types.first), required: true, class: 'form-select' %>
+                            <%= select_tag :unit_type, options_for_select(@unit_types.map { |u| [u, u] }, @unit_type.presence || @unit_types.first), required: true, class: 'form-control', title: (@unit_type.presence || @unit_types.first) %>
                         <% else %>
                             <%= text_field_tag :unit_type, @unit_type, required: true, maxlength: 255, class: 'form-control', placeholder: 'e.g. api-calls' %>
                         <% end %>
@@ -44,11 +44,40 @@
                 <div class="form-group d-flex pb-3">
                     <%= label_tag :record_date, 'Date/Time of Usage', class: 'col-sm-3 control-label' %>
                     <div class="col-sm-9">
-                        <%= datetime_field_tag :record_date,
-                                               @record_date.presence || Time.now.utc.strftime('%Y-%m-%dT%H:%M'),
-                                               required: true,
-                                               class: 'form-control' %>
-                        <small class="form-text text-muted">Date and time treated as UTC</small>
+                                                <%
+                                                    record_date_value = @record_date.to_s.strip
+                                                    record_date_date_value = Time.now.utc.strftime('%Y-%m-%d')
+                                                    record_date_time_value = '00:00'
+
+                                                    begin
+                                                        if record_date_value.match?(/^\d{4}-\d{2}-\d{2}$/)
+                                                            record_date_date_value = record_date_value
+                                                        elsif record_date_value.match?(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/)
+                                                            record_date_date_value = record_date_value[0, 10]
+                                                            record_date_time_value = record_date_value[11, 5]
+                                                        elsif !record_date_value.empty?
+                                                            parsed_record_date = Time.iso8601(record_date_value).utc
+                                                            record_date_date_value = parsed_record_date.strftime('%Y-%m-%d')
+                                                            record_date_time_value = parsed_record_date.strftime('%H:%M')
+                                                        end
+                                                    rescue ArgumentError
+                                                        record_date_date_value = Time.now.utc.strftime('%Y-%m-%d')
+                                                        record_date_time_value = '00:00'
+                                                    end
+                                                %>
+
+                                                <div class="d-flex gap-2 align-items-center">
+                                                        <%= date_field_tag :record_date_date,
+                                                                                             record_date_date_value,
+                                                                                             required: true,
+                                                                                             class: 'form-control' %>
+                                                        <%= time_field_tag :record_date_time,
+                                                                                             record_date_time_value,
+                                                                                             step: 60,
+                                                                                             class: 'form-control' %>
+                                                </div>
+                                                <%= hidden_field_tag :record_date, "#{record_date_date_value}T#{record_date_time_value}" %>
+                                                <small class="form-text text-muted">Pick a date. Time is optional and defaults to 00:00 (UTC) if unchanged.</small>
                     </div>
                 </div>
 
@@ -86,11 +115,19 @@
   document.addEventListener('DOMContentLoaded', function () {
     var form = document.getElementById('record_usage_form');
     if (!form) { return; }
+        var unitTypeSelect = document.getElementById('unit_type');
+        if (unitTypeSelect && unitTypeSelect.tagName === 'SELECT') {
+            unitTypeSelect.title = unitTypeSelect.value || '';
+            unitTypeSelect.addEventListener('change', function () {
+                unitTypeSelect.title = unitTypeSelect.value || '';
+            });
+        }
+
     form.addEventListener('submit', function (e) {
       var errors = [];
 
-      var unitTypeEl = document.getElementById('unit_type');
-      var unitType = unitTypeEl ? (unitTypeEl.value || '').trim() : '';
+            var unitTypeEl = document.getElementById('unit_type');
+            var unitType = unitTypeEl ? (unitTypeEl.value || '').trim() : '';
       if (unitType.length === 0) {
         errors.push('Unit type is required.');
       }
@@ -99,6 +136,31 @@
       var amount = parseInt(amountStr, 10);
       if (amountStr.length === 0 || isNaN(amount) || amount <= 0 || String(amount) !== amountStr) {
         errors.push('Amount must be a positive integer.');
+      }
+
+            var dateEl = document.getElementById('record_date_date');
+            var timeEl = document.getElementById('record_date_time');
+            var hiddenDateEl = document.getElementById('record_date');
+
+            var datePart = dateEl ? (dateEl.value || '').trim() : '';
+            var timePart = timeEl ? (timeEl.value || '').trim() : '';
+            if (timePart.length === 0) {
+                timePart = '00:00';
+            }
+
+            var dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+            var timeRegex = /^\d{2}:\d{2}$/;
+            if (datePart.length === 0) {
+                errors.push('Date/time of usage is required.');
+            } else if (!dateRegex.test(datePart)) {
+                errors.push('Date of usage must be in YYYY-MM-DD format.');
+            } else if (!timeRegex.test(timePart)) {
+                errors.push('Time must be in HH:MM format.');
+            } else {
+                var composedDateTime = datePart + 'T' + timePart;
+                if (hiddenDateEl) {
+                    hiddenDateEl.value = composedDateTime;
+                }
       }
 
       if (errors.length > 0) {
