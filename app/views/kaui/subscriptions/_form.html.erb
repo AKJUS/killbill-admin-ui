@@ -37,11 +37,11 @@
     <div class="form-group d-flex pb-3">
       <div class="col-sm-3 control-label" style="padding-top: 2px;">
         <div id="toggle_phase_overrides" style="cursor: pointer; user-select: none;">
-          <span id="toggle_phase_overrides_caret">&#9662;</span>
-          <strong>Phase Overrides</strong>
+          <span id="toggle_phase_overrides_caret">&#9656;</span>
+          <strong>Price Override</strong>
         </div>
       </div>
-      <div class="col-sm-9" id="phase_overrides_section">
+      <div class="col-sm-9" id="phase_overrides_section" style="display: none;">
         <p class="text-muted mb-2" style="font-size: 13px;">Override prices for specific phases. All other phases will use catalog pricing.</p>
         <div id="phase_overrides_headers" class="d-flex mb-1 gap-2" style="display: none;">
           <div style="flex: 1; padding-left: 2px;"><small><strong>Phase</strong></small></div>
@@ -55,7 +55,7 @@
           <div style="width: 40px;"></div>
         </div>
         <div id="phase_overrides_rows"></div>
-        <button type="button" id="add_phase_override" class="btn w-100 mt-2 d-flex align-items-center justify-content-center gap-1"
+        <button type="button" id="add_phase_override" class="btn w-100 mt-2 align-items-center justify-content-center gap-1"
           style="border: 1px dashed #d0d5dd; background: white; color: #2563eb; font-size: 14px;">
           <span style="font-size: 16px; line-height: 1;">+</span> Add another phase
         </button>
@@ -178,7 +178,13 @@ function initPhaseOverrides() {
     var $planSelect = $('select[name="plan_name"]');
 
     function currentPhases() {
-        return planPhases[$planSelect.val()] || [];
+      var phases = planPhases[$planSelect.val()] || [];
+      var seen = {};
+      return phases.filter(function(p) {
+        if (!p || !p.type || seen[p.type]) return false;
+        seen[p.type] = true;
+        return true;
+      });
     }
 
     function phaseLabel(p) {
@@ -194,9 +200,13 @@ function initPhaseOverrides() {
 
     function refreshAddBtn() {
         var phases = currentPhases();
-        var used = selectedTypes();
+        var used = selectedTypes().filter(function(type) { return type; });
         var hasMore = phases.length > 0 && used.length < phases.length;
-        $addBtn.toggle(hasMore);
+        if (hasMore) {
+            $addBtn.css('display', 'flex');
+        } else {
+            $addBtn.hide();
+        }
         $headers.css('display', $rows.find('.phase-override-row').length > 0 ? 'flex' : 'none');
     }
 
@@ -222,7 +232,7 @@ function initPhaseOverrides() {
     function addRow(preferredType) {
         var phases = currentPhases();
         if (phases.length === 0) return;
-        var used = selectedTypes();
+        var used = selectedTypes().filter(function(type) { return type; });
         var next = preferredType && phases.some(function(p) { return p.type === preferredType; }) && used.indexOf(preferredType) === -1
             ? preferredType
             : (phases.find(function(p) { return used.indexOf(p.type) === -1; }) || {}).type;

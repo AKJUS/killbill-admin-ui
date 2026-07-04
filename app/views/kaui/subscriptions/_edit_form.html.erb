@@ -27,7 +27,7 @@
           <div style="width: 40px;"></div>
         </div>
         <div id="phase_overrides_rows"></div>
-        <button type="button" id="add_phase_override" class="btn w-100 mt-2 d-flex align-items-center justify-content-center gap-1"
+        <button type="button" id="add_phase_override" class="btn w-100 mt-2 align-items-center justify-content-center gap-1"
           style="border: 1px dashed #d0d5dd; background: white; color: #2563eb; font-size: 14px;">
           <span style="font-size: 16px; line-height: 1;">+</span> Add another phase
         </button>
@@ -161,7 +161,13 @@ function initPhaseOverrides() {
     var $planSelect = $('select[name="plan_name"]');
 
     function currentPhases() {
-        return planPhases[$planSelect.val()] || [];
+      var phases = planPhases[$planSelect.val()] || [];
+      var seen = {};
+      return phases.filter(function(p) {
+        if (!p || !p.type || seen[p.type]) return false;
+        seen[p.type] = true;
+        return true;
+      });
     }
 
     function phaseLabel(p) {
@@ -177,9 +183,13 @@ function initPhaseOverrides() {
 
     function refreshAddBtn() {
         var phases = currentPhases();
-        var used = selectedTypes();
+        var used = selectedTypes().filter(function(type) { return type; });
         var hasMore = phases.length > 0 && used.length < phases.length;
-        $addBtn.toggle(hasMore);
+        if (hasMore) {
+            $addBtn.css('display', 'flex');
+        } else {
+            $addBtn.hide();
+        }
         $headers.css('display', $rows.find('.phase-override-row').length > 0 ? 'flex' : 'none');
     }
 
@@ -205,7 +215,7 @@ function initPhaseOverrides() {
     function addRow(preferredType) {
         var phases = currentPhases();
         if (phases.length === 0) return;
-        var used = selectedTypes();
+        var used = selectedTypes().filter(function(type) { return type; });
         var next = preferredType && phases.some(function(p) { return p.type === preferredType; }) && used.indexOf(preferredType) === -1
             ? preferredType
             : (phases.find(function(p) { return used.indexOf(p.type) === -1; }) || {}).type;
