@@ -1,5 +1,28 @@
 <% if can? :config_upload, Kaui::AdminTenant %>
     <div class="tab-pane fade invoice-template form-invoice-template" id="InvoiceTemplate">
+      <% if @invoice_template.present? %>
+        <div class="invoice-template-display mb-4">
+          <h5>Current Invoice Template</h5>
+          <div class="card">
+            <div class="card-body p-0">
+              <iframe src="<%= admin_tenant_invoice_template_path(@tenant.id) %>" style="width: 100%; height: 500px; border: none;" title="Invoice Template Preview"></iframe>
+            </div>
+          </div>
+          <div class="mt-2">
+            <%= render "kaui/components/button/button", {
+              label: 'View Source',
+              variant: "outline-secondary d-inline-flex align-items-center gap-1",
+              type: "button",
+              html_class: "kaui-dropdown custom-hover",
+              html_options: {
+                onclick: '$(this).toggleClass("active"); $(this).next("pre").toggle(); return false;'
+              }
+            } %>
+            <pre class="mb-0 mt-2 p-2 bg-light" style="display: none; max-height: 400px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; font-family: monospace; font-size: 12px;"><%= html_escape(@invoice_template) %></pre>
+          </div>
+        </div>
+      <% end %>
+
       <%= form_tag({:action => :upload_invoice_template}, :method => 'post', :multipart => true, :class => 'form-horizontal') do %>
           <%= hidden_field_tag(:id, @tenant.id) %>
 
@@ -18,8 +41,6 @@
               onchange: "this.parentNode.setAttribute('data-file', this.files[0]?.name || '')" 
             %>
           </div>
-
-
 
           <div class="form-group pb-3 border-bottom mb-3">
             <div class="col-sm-10">

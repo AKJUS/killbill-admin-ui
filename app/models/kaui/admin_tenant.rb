@@ -15,6 +15,10 @@ module Kaui
         KillBillClient::Model::Invoice.upload_invoice_template(invoice_template, is_manual_pay, delete_if_exists, user, reason, comment, options)
       end
 
+      def get_invoice_template(is_manual_pay, options = {})
+        KillBillClient::Model::Invoice.get_invoice_template(is_manual_pay, nil, options)
+      end
+
       def upload_invoice_translation(invoice_translation, locale, delete_if_exists, user = nil, reason = nil, comment = nil, options = {})
         KillBillClient::Model::Invoice.upload_invoice_translation(invoice_translation, locale, delete_if_exists, user, reason, comment, options)
       end

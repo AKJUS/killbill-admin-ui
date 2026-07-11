@@ -202,6 +202,7 @@ Kaui::Engine.routes.draw do
     post '/modify_overdue_config' => 'admin_tenants#modify_overdue_config', :as => 'admin_tenant_modify_overdue_config'
     post '/upload_overdue_config' => 'admin_tenants#upload_overdue_config', :as => 'admin_tenant_upload_overdue_config'
     post '/upload_invoice_template' => 'admin_tenants#upload_invoice_template', :as => 'admin_tenant_upload_invoice_template'
+    get '/:id/invoice_template' => 'admin_tenants#invoice_template', :as => 'admin_tenant_invoice_template'
     post '/upload_invoice_translation' => 'admin_tenants#upload_invoice_translation', :as => 'admin_tenant_upload_invoice_translation'
     post '/upload_catalog_translation' => 'admin_tenants#upload_catalog_translation', :as => 'admin_tenant_upload_catalog_translation'
     post '/upload_plugin_config' => 'admin_tenants#upload_plugin_config', :as => 'admin_tenant_upload_plugin_config'
