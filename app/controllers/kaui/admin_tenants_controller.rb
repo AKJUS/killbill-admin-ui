@@ -394,9 +394,14 @@ module Kaui
       uploaded_invoice_translation = params.require(:invoice_translation)
       invoice_translation = uploaded_invoice_translation.read
 
+      if locale.blank?
+        flash[:error] = I18n.t('errors.messages.locale_required')
+        redirect_to admin_tenant_path(current_tenant.id, active_tab: 'InvoiceTranslation') and return
+      end
+
       Kaui::AdminTenant.upload_invoice_translation(invoice_translation, locale, true, options[:username], nil, comment, options)
 
-      redirect_to admin_tenant_path(current_tenant.id), notice: I18n.t('flashes.notices.invoice_translation_uploaded_successfully')
+      redirect_to admin_tenant_path(current_tenant.id, active_tab: 'InvoiceTranslation'), notice: I18n.t('flashes.notices.invoice_translation_uploaded_successfully')
     end
 
     def upload_catalog_translation
@@ -410,9 +415,14 @@ module Kaui
       uploaded_catalog_translation = params.require(:catalog_translation)
       catalog_translation = uploaded_catalog_translation.read
 
+      if locale.blank?
+        flash[:error] = I18n.t('errors.messages.locale_required')
+        redirect_to admin_tenant_path(current_tenant.id, active_tab: 'CatalogTranslation') and return
+      end
+
       Kaui::AdminTenant.upload_catalog_translation(catalog_translation, locale, true, options[:username], nil, comment, options)
 
-      redirect_to admin_tenant_path(current_tenant.id), notice: I18n.t('flashes.notices.catalog_translation_uploaded_successfully')
+      redirect_to admin_tenant_path(current_tenant.id, active_tab: 'CatalogTranslation'), notice: I18n.t('flashes.notices.catalog_translation_uploaded_successfully')
     end
 
     def upload_plugin_config

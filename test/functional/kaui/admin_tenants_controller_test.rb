@@ -104,16 +104,32 @@ module Kaui
       tenant = create_kaui_tenant
       post :upload_invoice_translation, params: { id: tenant.id, invoice_translation: fixture_file_upload("#{FIXTURES_PATH}/invoice_translation_fr-v1.properties"), translation_locale: 'fr_FR' }
 
-      assert_redirected_to admin_tenant_path(tenant.id)
+      assert_redirected_to admin_tenant_path(tenant.id, active_tab: 'InvoiceTranslation')
       assert_equal I18n.t('flashes.notices.invoice_translation_uploaded_successfully'), flash[:notice]
+    end
+
+    test 'should require a locale when uploading invoice translation' do
+      tenant = create_kaui_tenant
+      post :upload_invoice_translation, params: { id: tenant.id, invoice_translation: fixture_file_upload("#{FIXTURES_PATH}/invoice_translation_fr-v1.properties"), translation_locale: '' }
+
+      assert_redirected_to admin_tenant_path(tenant.id, active_tab: 'InvoiceTranslation')
+      assert_equal I18n.t('errors.messages.locale_required'), flash[:error]
     end
 
     test 'should upload catalog translation' do
       tenant = create_kaui_tenant
       post :upload_catalog_translation, params: { id: tenant.id, catalog_translation: fixture_file_upload("#{FIXTURES_PATH}/catalog_translation_fr-v1.properties"), translation_locale: 'fr_FR' }
 
-      assert_redirected_to admin_tenant_path(tenant.id)
+      assert_redirected_to admin_tenant_path(tenant.id, active_tab: 'CatalogTranslation')
       assert_equal I18n.t('flashes.notices.catalog_translation_uploaded_successfully'), flash[:notice]
+    end
+
+    test 'should require a locale when uploading catalog translation' do
+      tenant = create_kaui_tenant
+      post :upload_catalog_translation, params: { id: tenant.id, catalog_translation: fixture_file_upload("#{FIXTURES_PATH}/catalog_translation_fr-v1.properties"), translation_locale: '' }
+
+      assert_redirected_to admin_tenant_path(tenant.id, active_tab: 'CatalogTranslation')
+      assert_equal I18n.t('errors.messages.locale_required'), flash[:error]
     end
 
     test 'should upload plugin config' do
