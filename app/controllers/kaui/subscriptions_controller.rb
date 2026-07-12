@@ -353,7 +353,7 @@ module Kaui
       return nil if raw.blank?
 
       entries = raw.respond_to?(:values) ? raw.values : Array(raw)
-      phase_meta = (plan_details.phases || []).index_by(&:type)
+      phase_meta = plan_details.respond_to?(:phases) ? (plan_details.phases || []).index_by(&:type) : {}
 
       overrides = entries.filter_map do |entry|
         entry = entry.to_unsafe_h if entry.respond_to?(:to_unsafe_h)
@@ -384,18 +384,25 @@ module Kaui
 
     def build_plan_phases_map(plans_details)
       (plans_details || []).to_h do |pd|
-        phases = (pd.phases || []).map do |ph|
-          fixed = phase_uses_fixed_price?(ph)
-          prices = ph.prices || []
-          price_label = if fixed
-                          '$0.00'
-                        elsif prices.any?
-                          format('$%.2f', prices.first.value.to_f)
-                        else
-                          ''
-                        end
-          { type: ph.type, fixed: fixed, priceLabel: price_label }
-        end
+        # PlanDetail objects returned by available_base_plans/available_addons only expose the
+        # final phase (product/plan/priceList/finalPhaseBillingPeriod/finalPhaseRecurringPrice)
+        # and have no phases method, unlike full catalog Plan objects. Skip phase overrides for those.
+        phases = if pd.respond_to?(:phases)
+                   (pd.phases || []).map do |ph|
+                     fixed = phase_uses_fixed_price?(ph)
+                     prices = ph.prices || []
+                     price_label = if fixed
+                                     '$0.00'
+                                   elsif prices.any?
+                                     format('$%.2f', prices.first.value.to_f)
+                                   else
+                                     ''
+                                   end
+                     { type: ph.type, fixed: fixed, priceLabel: price_label }
+                   end
+                 else
+                   []
+                 end
         [pd.plan, phases]
       end
     end
