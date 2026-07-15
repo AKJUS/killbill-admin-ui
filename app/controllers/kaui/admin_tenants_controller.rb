@@ -47,6 +47,12 @@ module Kaui
         @overdue_xml = nil
       end
 
+      fetch_invoice_template = promise do
+        Kaui::AdminTenant.get_invoice_template(false, options)
+      rescue StandardError
+        @invoice_template = nil
+      end
+
       fetch_tenant_plugin_config = promise { Kaui::AdminTenant.get_tenant_plugin_config(options) }
 
       @catalog_versions = []
@@ -64,6 +70,12 @@ module Kaui
       @overdue = flash[:overdue_deleted] ? nil : wait(fetch_overdue)
       @overdue_xml = flash[:overdue_deleted] ? nil : wait(fetch_overdue_xml)
       @overdue_config_exists = @overdue_xml.present? || (@overdue&.overdue_states.present? && !@overdue.has_states)
+      @invoice_template = begin
+        wait(fetch_invoice_template)
+      rescue StandardError
+        nil
+      end
+
       @tenant_plugin_config = begin
         wait(fetch_tenant_plugin_config)
       rescue StandardError
@@ -367,6 +379,22 @@ module Kaui
       redirect_to admin_tenant_path(current_tenant.id, active_tab: 'OverdueShow'), notice: I18n.t('flashes.notices.overdue_deleted_successfully')
     end
 
+    def invoice_template
+      current_tenant = safely_find_tenant_by_id(params[:id])
+
+      options = tenant_options_for_client
+      options[:api_key] = current_tenant.api_key
+      options[:api_secret] = current_tenant.api_secret
+
+      template = Kaui::AdminTenant.get_invoice_template(false, options)
+
+      if template.present?
+        render body: template, content_type: 'text/html'
+      else
+        render plain: 'No invoice template found', status: :not_found
+      end
+    end
+
     def upload_invoice_template
       current_tenant = safely_find_tenant_by_id(params[:id])
 
@@ -380,7 +408,7 @@ module Kaui
 
       Kaui::AdminTenant.upload_invoice_template(invoice_template, is_manual_pay, true, options[:username], nil, comment, options)
 
-      redirect_to admin_tenant_path(current_tenant.id), notice: I18n.t('flashes.notices.invoice_template_uploaded_successfully')
+      redirect_to admin_tenant_path(current_tenant.id, active_tab: 'InvoiceTemplate'), notice: I18n.t('flashes.notices.invoice_template_uploaded_successfully')
     end
 
     def upload_invoice_translation
@@ -394,9 +422,14 @@ module Kaui
       uploaded_invoice_translation = params.require(:invoice_translation)
       invoice_translation = uploaded_invoice_translation.read
 
+      if locale.blank?
+        flash[:error] = I18n.t('errors.messages.locale_required')
+        redirect_to admin_tenant_path(current_tenant.id, active_tab: 'InvoiceTranslation') and return
+      end
+
       Kaui::AdminTenant.upload_invoice_translation(invoice_translation, locale, true, options[:username], nil, comment, options)
 
-      redirect_to admin_tenant_path(current_tenant.id), notice: I18n.t('flashes.notices.invoice_translation_uploaded_successfully')
+      redirect_to admin_tenant_path(current_tenant.id, active_tab: 'InvoiceTranslation'), notice: I18n.t('flashes.notices.invoice_translation_uploaded_successfully')
     end
 
     def upload_catalog_translation
@@ -410,9 +443,14 @@ module Kaui
       uploaded_catalog_translation = params.require(:catalog_translation)
       catalog_translation = uploaded_catalog_translation.read
 
+      if locale.blank?
+        flash[:error] = I18n.t('errors.messages.locale_required')
+        redirect_to admin_tenant_path(current_tenant.id, active_tab: 'CatalogTranslation') and return
+      end
+
       Kaui::AdminTenant.upload_catalog_translation(catalog_translation, locale, true, options[:username], nil, comment, options)
 
-      redirect_to admin_tenant_path(current_tenant.id), notice: I18n.t('flashes.notices.catalog_translation_uploaded_successfully')
+      redirect_to admin_tenant_path(current_tenant.id, active_tab: 'CatalogTranslation'), notice: I18n.t('flashes.notices.catalog_translation_uploaded_successfully')
     end
 
     def upload_plugin_config
