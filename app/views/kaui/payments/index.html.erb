@@ -41,7 +41,7 @@
 
 <%= javascript_tag do %>
 $(document).ready(function() {
-  var stateKey = 'DataTables_payments-table';
+  var stateKey = 'DataTables_payments-table-v2';
   var state = JSON.parse(localStorage.getItem(stateKey));
   if (state) {
     state.start = <%= @offset %>;
@@ -54,11 +54,12 @@ $(document).ready(function() {
       "enable": false
     },
     "stateSave": true,
+    "stateDuration": -1,
     "stateSaveCallback": function(settings, data) {
-      localStorage.setItem('DataTables_payments-table', JSON.stringify(data));
+      localStorage.setItem('DataTables_payments-table-v2', JSON.stringify(data));
     },
     "stateLoadCallback": function(settings) {
-      return JSON.parse(localStorage.getItem('DataTables_payments-table'));
+      return JSON.parse(localStorage.getItem('DataTables_payments-table-v2'));
     },
     "scrollX": true,
     <% if @account.account_id.blank? %>
@@ -115,6 +116,7 @@ $(document).ready(function() {
     "processing": true,
     "serverSide": true,
     "search": {"search": "<%= @search_query %>"},
+    "columns": <%= raw @visible_columns.to_json %>
   });
 
   // If the page loaded with advanced search params in the URL (e.g. restored from

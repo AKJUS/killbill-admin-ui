@@ -4,7 +4,9 @@ module Kaui
   class Account < KillBillClient::Model::Account
     attr_accessor :phone, :bill_cycle_day_local
 
-    SENSIVITE_DATA_FIELDS = %w[name email].freeze
+    # Columns shown by default on the Accounts list screen (demo-friendly defaults); the rest remain
+    # available but hidden until the user opts in via "Edit Columns".
+    DEFAULT_VISIBLE_COLUMNS = %w[name account_id external_key currency time_zone locale account_balance account_cba].freeze
     REMAPPING_FIELDS = {
       'is_payment_delegated_to_parent' => 'pay_via_parent',
       'account_balance' => 'balance',

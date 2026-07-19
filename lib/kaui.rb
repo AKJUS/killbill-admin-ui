@@ -66,6 +66,8 @@ module Kaui
     # Add additional fields if needed
     fields = original_fields.dup
     fields -= %w[audit_logs first_name_length]
+    # Demo-friendly default column order (see Kaui::Account::DEFAULT_VISIBLE_COLUMNS for the ones shown by default)
+    fields = Kaui::Account::DEFAULT_VISIBLE_COLUMNS + (fields - Kaui::Account::DEFAULT_VISIBLE_COLUMNS)
     headers = fields.dup
     Kaui::Account::REMAPPING_FIELDS.each do |k, v|
       headers[fields.index(k)] = v
@@ -115,8 +117,8 @@ module Kaui
     fields = KillBillClient::Model::InvoiceAttributes.instance_variable_get(:@json_attributes)
     # Change the order if needed
     fields -= Kaui::Invoice::TABLE_IGNORE_COLUMNS
-    fields.delete('invoice_id')
-    fields.unshift('invoice_id')
+    # Demo-friendly default column order (see Kaui::Invoice::DEFAULT_VISIBLE_COLUMNS for the ones shown by default)
+    fields = Kaui::Invoice::DEFAULT_VISIBLE_COLUMNS + (fields - Kaui::Invoice::DEFAULT_VISIBLE_COLUMNS)
 
     headers = fields.map { |attr| attr.split('_').join(' ').capitalize }
     # Add additional headers if needed
@@ -146,16 +148,16 @@ module Kaui
 
     raw_data = fields.map { |attr| invoice&.send(attr.downcase) }
 
-    [headers, values, raw_data]
+    [headers, values, raw_data, fields]
   end
 
   self.account_payments_columns = lambda do |account = nil, payment = nil, view_context = nil|
     fields = KillBillClient::Model::PaymentAttributes.instance_variable_get(:@json_attributes)
     # Change the order if needed
-    fields = %w[payment_date] + fields
-    fields -= %w[payment_number transactions audit_logs]
-    fields.unshift('status')
-    fields.unshift('payment_number')
+    fields = %w[payment_date status] + fields
+    fields -= %w[transactions audit_logs]
+    # Demo-friendly default column order (see Kaui::Payment::DEFAULT_VISIBLE_COLUMNS for the ones shown by default)
+    fields = Kaui::Payment::DEFAULT_VISIBLE_COLUMNS + (fields - Kaui::Payment::DEFAULT_VISIBLE_COLUMNS)
 
     headers = fields.dup
     Kaui::Payment::REMAPPING_FIELDS.each do |k, v|
@@ -163,7 +165,7 @@ module Kaui
     end
     headers.map! { |attr| attr.split('_').join(' ').capitalize }
 
-    return [headers, []] if payment.nil?
+    return [headers, [], [], fields] if payment.nil?
 
     values = fields.map do |attr|
       case attr
@@ -190,7 +192,7 @@ module Kaui
     end
 
     # Add additional values if needed
-    [headers, values, raw_data]
+    [headers, values, raw_data, fields]
   end
 
   self.account_audit_logs_columns = lambda do
