@@ -56,10 +56,10 @@ $(document).ready(function() {
     "stateSave": true,
     "stateDuration": -1,
     "stateSaveCallback": function(settings, data) {
-      localStorage.setItem('DataTables_payments-table-v2', JSON.stringify(data));
+      localStorage.setItem(stateKey, JSON.stringify(data));
     },
     "stateLoadCallback": function(settings) {
-      return JSON.parse(localStorage.getItem('DataTables_payments-table-v2'));
+      return JSON.parse(localStorage.getItem(stateKey));
     },
     "scrollX": true,
     <% if @account.account_id.blank? %>

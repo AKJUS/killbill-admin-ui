@@ -204,7 +204,7 @@ module Kaui
     end
 
     def default_columns(fields, visible_fields)
-      fields.map { |field| { data: fields.index(field), visible: visible_fields.include?(field) } }
+      fields.each_with_index.map { |field, index| { data: index, visible: visible_fields.include?(field) } }
     end
   end
 end
