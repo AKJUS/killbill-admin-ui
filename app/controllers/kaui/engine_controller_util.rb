@@ -203,8 +203,8 @@ module Kaui
       render json: response, status: response_status
     end
 
-    def default_columns(fields, sensivite_fields)
-      fields.map { |field| { data: fields.index(field), visible: !(sensivite_fields.include? field) } }
+    def default_columns(fields, visible_fields)
+      fields.each_with_index.map { |field, index| { data: index, visible: visible_fields.include?(field) } }
     end
   end
 end

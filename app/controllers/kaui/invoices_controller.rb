@@ -10,6 +10,8 @@ module Kaui
       @offset = params[:offset] || 0
       @limit = params[:limit] || 50
       @search_fields = Kaui::Invoice::ADVANCED_SEARCH_COLUMNS.map { |attr| [attr, attr.split('_').join(' ').capitalize] }
+      @dropdown_default = default_columns(Kaui.account_invoices_columns.call[3], Kaui::Invoice::DEFAULT_VISIBLE_COLUMNS)
+      @visible_columns = @dropdown_default
 
       @max_nb_records = @search_query.blank? ? Kaui::Invoice.list_or_search(nil, 0, 0, options_for_klient).pagination_max_nb_records : 0
     end

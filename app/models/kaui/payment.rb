@@ -7,6 +7,9 @@ module Kaui
     attr_accessor :payment_date, :target_invoice_id
 
     TRANSACTION_STATUSES = %w[SUCCESS PENDING PAYMENT_FAILURE PLUGIN_FAILURE UNKNOWN].freeze
+    # Columns shown by default on the Payments list screen (demo-friendly defaults); the rest remain
+    # available but hidden until the user opts in via "Edit Columns".
+    DEFAULT_VISIBLE_COLUMNS = %w[payment_date payment_number status account_id currency purchased_amount refunded_amount credited_amount].freeze
     REMAPPING_FIELDS = {
       'auth_amount' => 'auth',
       'captured_amount' => 'capture',

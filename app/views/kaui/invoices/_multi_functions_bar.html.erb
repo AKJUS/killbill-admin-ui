@@ -52,7 +52,7 @@
       <%  Kaui.account_invoices_columns.call[0].each_with_index do |title, index| %>
           <li class="list-group-item-manual" data-id="<%= index %>">
             <label class="label-group-item-manual">
-              <input type="checkbox" class="column-toggle" draggable="true" data-column="<%= index %>" checked> 
+              <input type="checkbox" class="column-toggle" draggable="true" data-column="<%= index %>" <%= 'checked' if @dropdown_default[index][:visible] %>> 
               <%= title %>
               <span class="icon-drag" aria-hidden="true"></span>
             </label>
@@ -337,7 +337,7 @@ $(document).ready(function() {
   updateDropdownOrder();
 
   function loadState() {
-    var state = JSON.parse(localStorage.getItem('DataTables_invoices-table'));
+    var state = JSON.parse(localStorage.getItem('DataTables_invoices-table-v2'));
     return state || { columns: [], columnOrder: [] };
   }
 

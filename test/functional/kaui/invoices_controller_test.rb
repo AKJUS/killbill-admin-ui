@@ -7,6 +7,14 @@ module Kaui
     test 'should get index' do
       get :index, params: { account_id: @invoice_item.account_id }
       assert_response :ok
+
+      assert_not_nil assigns(:dropdown_default)
+      assert_not_nil assigns(:visible_columns)
+      assert_equal assigns(:dropdown_default), assigns(:visible_columns)
+
+      fields = Kaui.account_invoices_columns.call[3]
+      visible_fields = assigns(:dropdown_default).each_with_index.select { |column, _index| column[:visible] }.map { |_column, index| fields[index] }
+      assert_equal Kaui::Invoice::DEFAULT_VISIBLE_COLUMNS, visible_fields
     end
 
     test 'should list invoices' do

@@ -17,7 +17,7 @@ module Kaui
         return
       end
       @search_fields = Kaui::Account::ADVANCED_SEARCH_COLUMNS.map { |attr| [attr, attr.split('_').join(' ').capitalize] }
-      @dropdown_default = default_columns(Kaui.account_search_columns.call[2], Kaui::Account::SENSIVITE_DATA_FIELDS)
+      @dropdown_default = default_columns(Kaui.account_search_columns.call[2], Kaui::Account::DEFAULT_VISIBLE_COLUMNS)
       @visible_columns = @dropdown_default
 
       @ordering = params[:ordering] || (@search_query.blank? ? 'desc' : 'asc')
@@ -47,7 +47,7 @@ module Kaui
         Kaui.account_search_columns.call(account, view_context)[1]
       end
 
-      paginate searcher, data_extractor, formatter, default_columns(Kaui.account_search_columns.call[2], Kaui::Account::SENSIVITE_DATA_FIELDS)
+      paginate searcher, data_extractor, formatter, default_columns(Kaui.account_search_columns.call[2], Kaui::Account::DEFAULT_VISIBLE_COLUMNS)
     end
 
     def download

@@ -79,11 +79,12 @@ $(document).ready(function() {
       "enable": false
     },
     "stateSave": true,
+    "stateDuration": -1,
     "stateSaveCallback": function(settings, data) {
-      localStorage.setItem('DataTables_accounts-table_' + window.location.pathname, JSON.stringify(data));
+      localStorage.setItem('DataTables_accounts-table-v2_' + window.location.pathname, JSON.stringify(data));
     },
     "stateLoadCallback": function(settings) {
-      return JSON.parse(localStorage.getItem('DataTables_accounts-table_' + window.location.pathname));
+      return JSON.parse(localStorage.getItem('DataTables_accounts-table-v2_' + window.location.pathname));
     },
     "scrollX": true,
     "dom": "<'row'r>t<'row'<'col-md-6'i><'col-md-6'p>>",
